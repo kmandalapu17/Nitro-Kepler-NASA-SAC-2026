@@ -1,10 +1,11 @@
 [theme]
 base = "light"   
-primaryColor="#ffc18a"
-backgroundColor="#fbfbe9"
-secondaryBackgroundColor="#ffffd6"
-textColor="#0a3965"
-font="sans serif"
+primaryColor="#33704A"
+backgroundColor="#ffffff"
+secondaryBackgroundColor="#FBE5C6"
+textColor="#33704a"
+grayTextColor = "#62a77a"
+linkColor="#62a77a"
 
 [client]
 showSidebarNavigation = false   
