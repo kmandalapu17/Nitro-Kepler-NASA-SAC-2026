@@ -20,6 +20,13 @@ st.markdown(
         font-weight: 400;
     }
 
+    .stButton > button {
+    border-width: 8px !important;  /* Change this value to adjust thickness */
+    border-style: solid !important;
+    border-color: #62A77A !important; /* Optional: Sets the color of the border */
+    font-size: 18px !important;
+    }
+
     /* Headings and Title container styling */
     [data-testid="stMarkdownContainer"] h1, 
     [data-testid="stMarkdownContainer"] h2, 
@@ -118,6 +125,7 @@ st.write("")
 
 
 lefts, right = st.columns(2)
+
 with lefts:
     with st.container(horizontal_alignment="center"):
         manual = st.button("Click here for a manual report.")
