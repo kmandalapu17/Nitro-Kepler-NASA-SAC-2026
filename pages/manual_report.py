@@ -241,17 +241,16 @@ elif st.session_state.step == "results":
     results = evaluate(selected, events)
 
     st.write("### Possible conditions")
-    st.caption("This is not a diagnosis. These are conditions your symptoms may be related to.")
 
     if any(r["level"] == "red" for r in results):
-        st.error("Contact your flight surgeon now.")
+        st.error("# EMERGENCY. GET HELP IMMEDIATELY.")
 
     if not results:
-        st.info("Your symptoms don't match a known pattern. Rest, re-check later, and report if they persist.")
+        st.info("Your symptoms don't match a known disease.")
 
     for r in results:
         box = st.error if r["level"] == "red" else st.warning
-        box(f"**{r['name']}**  \nMatched symptoms: {', '.join(r['matched'])}")
+        box(f"**{r['name']}**  \Symptoms: {', '.join(r['matched'])}")
         ids = tests_to_run(results)
     ids = tests_to_run(results)
     if ids:
@@ -269,7 +268,7 @@ elif st.session_state.step == "tests":
             st.radio(spec["label"], ["Yes", "No"], index=None, horizontal=True, key=f"test_{t}")
         else:
             st.number_input(spec["label"], value=None, key=f"test_{t}")
-    st.button("See refined results", on_click=submit_tests)
+    st.button("See new results", on_click=submit_tests)
     st.button("Back", on_click=set_step, args=("results",))
 
 elif st.session_state.step == "refined":
@@ -280,6 +279,6 @@ elif st.session_state.step == "refined":
         box = st.error if r["level"] == "red" else st.warning
         if r["status"] == "less likely":
             box = st.info
-        extra = f"  \nAbnormal tests: {', '.join(r['abnormal'])}" if r["abnormal"] else ""
+        extra = f"  \nUnusual tests: {', '.join(r['unusual'])}" if r["unusual"] else ""
         box(f"**{r['name']}** ({r['status']}){extra}")
     st.button("Return to Home", on_click=set_step, args=("confirm_home",))
