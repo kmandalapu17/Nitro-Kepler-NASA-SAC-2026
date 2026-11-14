@@ -245,7 +245,6 @@ def start_over():
     st.session_state.group_idx = 0
     st.session_state.no_symptoms = False
     st.session_state.step = "start"
-
 # Page Logic
 st.set_page_config(page_title="Manual Report", page_icon=":material/thumb_up:", layout="wide")
 
@@ -255,9 +254,15 @@ if "step" not in st.session_state:
 def set_step(name):
     st.session_state.step = name
 
+
+
 st.write("## Manual report portal.")
 if st.session_state.step == "start":
     st.write("# How are you feeling today?")
+    if st.session_state.pop("came_from_auto", False):
+        flags = st.session_state.pop("auto_flags", [])
+        st.warning(f"The automatic check flagged: {', '.join(flags)}. Please complete a manual check.")
+
     st.button("Everything is good.", on_click=set_step, args=("fine",))
     st.button("I feel unwell.", on_click=set_step, args=("unwell",))
 
