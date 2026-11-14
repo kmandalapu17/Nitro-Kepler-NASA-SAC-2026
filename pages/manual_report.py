@@ -160,30 +160,64 @@ def evaluate(selected, events):
         if "requires" in c and not any(s in selected for s in c["requires"]):
             continue
         results.append({"name": c["name"], "level": c["level"], "matched": matched})
-    # red first, then most matched symptoms
-    results.sort(key=lambda r: (r["level"] != "red", -len(r["matched"])))
+    # most matched symptoms first (ties keep the order of CONDITIONS)
+    results.sort(key=lambda r: -len(r["matched"]))
     return results
 
 # ---------- CALLBACKS ----------
 
+# Screen order: recent events first, then each symptom group
+PAGES = ["Recent events"] + list(SYMPTOM_GROUPS.keys())
+
+def init_wizard():
+    if "group_idx" not in st.session_state:
+        st.session_state.group_idx = 0
+    if "picked_syms" not in st.session_state:
+        st.session_state.picked_syms = set()
+    if "picked_events" not in st.session_state:
+        st.session_state.picked_events = set()
+
+def save_page():
+    """Copy this screen's checkboxes into the permanent store."""
+    page = PAGES[st.session_state.group_idx]
+    if page == "Recent events":
+        for key in EVENTS:
+            if st.session_state.get(f"event_{key}"):
+                st.session_state.picked_events.add(key)
+            else:
+                st.session_state.picked_events.discard(key)
+    else:
+        for s in SYMPTOM_GROUPS[page]:
+            if st.session_state.get(f"sym_{s}"):
+                st.session_state.picked_syms.add(s)
+            else:
+                st.session_state.picked_syms.discard(s)
+
+def next_page():
+    save_page()
+    st.session_state.group_idx += 1
+
+def prev_page():
+    save_page()
+    st.session_state.group_idx -= 1
+
 def submit_symptoms():
-    chosen = [s for items in SYMPTOM_GROUPS.values() for s in items
-              if st.session_state.get(f"sym_{s}")]
-    events = [k for k in EVENTS if st.session_state.get(f"event_{k}")]
-    if not chosen:
-        st.session_state.no_symptoms = True     # stay on this screen
+    save_page()
+    if not st.session_state.picked_syms:
+        st.session_state.no_symptoms = True      # stay on the last screen
         return
     st.session_state.no_symptoms = False
-    st.session_state.selected = chosen
-    st.session_state.events = events
+    # keep the order from SYMPTOM_GROUPS
+    st.session_state.selected = [s for items in SYMPTOM_GROUPS.values()
+                                 for s in items if s in st.session_state.picked_syms]
+    st.session_state.events = [k for k in EVENTS if k in st.session_state.picked_events]
     st.session_state.step = "results"
 
 def start_over():
-    for items in SYMPTOM_GROUPS.values():
-        for s in items:
-            st.session_state.pop(f"sym_{s}", None)
-    for k in EVENTS:
-        st.session_state.pop(f"event_{k}", None)
+    st.session_state.picked_syms = set()
+    st.session_state.picked_events = set()
+    st.session_state.group_idx = 0
+    st.session_state.no_symptoms = False
     st.session_state.step = "start"
 
 # Page Logic
@@ -196,9 +230,8 @@ def set_step(name):
     st.session_state.step = name
 
 st.write("## Manual report portal.")
-st.write("# How are you feeling today?")
-
 if st.session_state.step == "start":
+    st.write("# How are you feeling today?")
     st.button("Everything is good.", on_click=set_step, args=("fine",))
     st.button("I feel unwell.", on_click=set_step, args=("unwell",))
 
@@ -216,24 +249,41 @@ elif st.session_state.step == "confirm_home":
     st.button("No", on_click=set_step, args=("fine",))
 
 elif st.session_state.step == "unwell":
+    init_wizard()
+    idx = st.session_state.group_idx
+    page = PAGES[idx]
+    last = idx == len(PAGES) - 1
+
     st.write("### What symptoms do you have?")
+    st.progress((idx + 1) / len(PAGES), text=f"Step {idx + 1} of {len(PAGES)}: {page}")
 
-    st.write("**Has any of this happened recently?**")
-    for key, label in EVENTS.items():
-        st.checkbox(label, key=f"event_{key}")
+    if page == "Recent events":
+        st.write("**Has any of this happened recently?**")
+        for key, label in EVENTS.items():
+            st.checkbox(label, key=f"event_{key}",
+                        value=key in st.session_state.picked_events)
+    else:
+        st.write(f"**{page}**")
+        for s in SYMPTOM_GROUPS[page]:
+            st.checkbox(s, key=f"sym_{s}",
+                        value=s in st.session_state.picked_syms)
 
-    cols = st.columns(3)
-    for i, (group, items) in enumerate(SYMPTOM_GROUPS.items()):
-        with cols[i % 3]:
-            st.write(f"**{group}**")
-            for s in items:
-                st.checkbox(s, key=f"sym_{s}")
+    if last and st.session_state.get("no_symptoms"):
+        st.write("No symptoms selected. Sending for Automatic Checks.")
+        if st.button("Perform Automatic Checks", key="no_sym_auto_btn"):
+            st.switch_page("pages/semi_automated_report.py")
 
-    if st.session_state.get("no_symptoms"):
-        st.warning("Please select at least one symptom.")
-
-    st.button("Submit Symptoms", on_click=submit_symptoms)
-    st.button("Back", on_click=set_step, args=("start",))
+    col1, col2 = st.columns(2)
+    with col1:
+        if idx == 0:
+            st.button("Back", on_click=set_step, args=("start",), key="wiz_back_start")
+        else:
+            st.button("Previous", on_click=prev_page, key="wiz_prev")
+    with col2:
+        if last:
+            st.button("Submit Symptoms", on_click=submit_symptoms, key="wiz_submit")
+        else:
+            st.button("Next", on_click=next_page, key="wiz_next")
 
 elif st.session_state.step == "results":
     selected = st.session_state.get("selected", [])
@@ -242,15 +292,15 @@ elif st.session_state.step == "results":
 
     st.write("### Possible conditions")
 
-    if any(r["level"] == "red" for r in results):
-        st.error("# EMERGENCY. GET HELP IMMEDIATELY.")
-
     if not results:
-        st.info("Your symptoms don't match a known disease.")
+        st.write("Your symptoms don't match a known disease.")
+        st.write("Sending for Automatic Checks")
+        if st.button("Perform Automatic Checks"):
+            st.switch_page("pages/semi_automated_report.py")
 
     for r in results:
         box = st.error if r["level"] == "red" else st.warning
-        box(f"**{r['name']}**  \Symptoms: {', '.join(r['matched'])}")
+        box(f"**{r['name']}**  Symptoms: {', '.join(r['matched'])}")
         ids = tests_to_run(results)
     ids = tests_to_run(results)
     if ids:
@@ -279,6 +329,6 @@ elif st.session_state.step == "refined":
         box = st.error if r["level"] == "red" else st.warning
         if r["status"] == "less likely":
             box = st.info
-        extra = f"  \nUnusual tests: {', '.join(r['unusual'])}" if r["unusual"] else ""
+        extra = f"  \nUnusual tests: {', '.join(r['abnormal'])}" if r["abnormal"] else ""
         box(f"**{r['name']}** ({r['status']}){extra}")
     st.button("Return to Home", on_click=set_step, args=("confirm_home",))
