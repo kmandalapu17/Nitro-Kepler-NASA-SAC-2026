@@ -131,7 +131,7 @@ st.markdown(
 profile_banner()
 st.write("")
 
-lefts, right = st.columns(2)
+lefts, mid, right = st.columns(3)
 
 with lefts:
     with st.container(horizontal_alignment="center"):
@@ -139,13 +139,12 @@ with lefts:
 with right:
     with st.container(horizontal_alignment="center"):
         auto = st.button("Click here for the semi-automated report.")
-with st.container(horizontal_alignment="center", vertical_alignment="center"):
-    st.image("New Piskel-1.png.png", caption="Your health is our priority.", width=400)
-
-_, mid, _ = st.columns([1, 2, 1])
 with mid:
     with st.container(horizontal_alignment="center"):
         profile = st.button("Set up or change astronaut profile")
+with st.container(horizontal_alignment="center", vertical_alignment="center"):
+    st.image("New Piskel-1.png.png", caption="Your health is our priority.", width=400)
+
 
 if manual:
     st.switch_page("pages/manual_report.py")

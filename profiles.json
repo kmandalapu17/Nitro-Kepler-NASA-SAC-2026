@@ -3,6 +3,8 @@
     "vitals": {
       "heart_rate": 65.0,
       "spo2": 97.0,
+      "heart_rate": 65.0,
+      "spo2": 97.0,
       "temp": 36.8,
       "resp_rate": 14.0,
       "systolic": 118.0
