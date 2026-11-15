@@ -1,4 +1,5 @@
 import streamlit as st
+from profiles import get_test_baselines, profile_banner
 #Formatting
 st.markdown(
     """
@@ -188,9 +189,7 @@ CONDITIONS = [
                   "Feeling unsupported by ground team"]},
 ]
 
-# placeholder baselines: replace with each astronaut's own values
-BASELINES = {"balance": 20, "grip": 40, "pulse": 65, "weight": 75,
-             "sit_stand": 15, "pvt": 300, "digits": 7}
+BASELINES = get_test_baselines()   # comes from the active profile
 
 TESTS = {
     "Amsler Grid":   {"label": "Amsler grid: do any lines look wavy, broken or missing?", "help": "Amsler grid JPG.png",
@@ -362,6 +361,7 @@ def set_step(name):
 
 
 st.write("## Manual report portal.")
+profile_banner()
 if st.session_state.step == "start":
     st.write("# How are you feeling today?")
     if st.session_state.pop("came_from_auto", False):

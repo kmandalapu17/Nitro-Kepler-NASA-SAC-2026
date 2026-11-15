@@ -1,5 +1,5 @@
 import streamlit as st
-
+from profiles import profile_banner
 st.set_page_config(page_title="homepage", page_icon=":material/thumb_up:", layout="wide")
 import streamlit as st
 
@@ -128,8 +128,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+profile_banner()
 st.write("")
-
 
 lefts, right = st.columns(2)
 
@@ -140,9 +140,14 @@ with right:
     with st.container(horizontal_alignment="center"):
         auto = st.button("Click here for the semi-automated report.")
 
+_, mid, _ = st.columns([1, 2, 1])
+with mid:
+    with st.container(horizontal_alignment="center"):
+        profile = st.button("Set up or change astronaut profile")
+
 if manual:
-    st.write("You have selected the manual report option.")
     st.switch_page("pages/manual_report.py")
 if auto:
-    st.write("You have selected the semi-automated report option.")
     st.switch_page("pages/semi_automated_report.py")
+if profile:
+    st.switch_page("pages/profile.py")

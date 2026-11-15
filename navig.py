@@ -8,5 +8,6 @@ autoo = st.Page(
     title="Semi-Automated Report",
     icon=":material/thumb_up:",
 )
-pg = st.navigation([homee, manuall, autoo])
+profilee = st.Page("pages/profile.py", title="Profiles")
+pg = st.navigation([homee, manuall, autoo, profilee])
 pg.run() 

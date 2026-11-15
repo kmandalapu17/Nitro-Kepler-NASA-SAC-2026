@@ -1,7 +1,8 @@
 import time
 import pandas as pd
 import streamlit as st
-from vitals import BASELINE, SCENARIOS, read_vitals, assess
+from vitals import SCENARIOS, build_baseline, read_vitals, assess
+from profiles import get_vital_baselines, profile_banner
 
 #Formatting
 st.markdown(
@@ -112,6 +113,9 @@ st.markdown(
 st.set_page_config(page_title="Automatic Checks", layout="wide")
 st.write("## Automatic health monitoring")
 st.caption("Simulated sensor data for demonstration.")
+profile_banner()
+
+BASELINE = build_baseline(get_vital_baselines())   # personal baseline + fixed limits
 
 N_READINGS = 15
 TRIGGER = ("yellow", "red")      # which levels send the user to manual: your team decides
@@ -126,8 +130,8 @@ if st.button("Start monitoring", key="start_auto"):
 
     level, flags = "green", {}
     for tick in range(N_READINGS):
-        history.append(read_vitals(scenario, tick))
-        level, flags = assess(history)
+        history.append(read_vitals(scenario, tick, BASELINE))
+        level, flags = assess(history, BASELINE)
 
         for slot, (name, v) in zip(slots, BASELINE.items()):
             with slot.container():
@@ -145,7 +149,7 @@ if st.button("Start monitoring", key="start_auto"):
     if level in TRIGGER:
         st.session_state.came_from_auto = True
         st.session_state.auto_flags = list(flags)
-        st.session_state.step = "start"          # manual page starts at its first screen
+        st.session_state.step = "start"
         st.warning("Something looks off. Switching to a manual check...")
         time.sleep(2)
         st.switch_page("pages/manual_report.py")
