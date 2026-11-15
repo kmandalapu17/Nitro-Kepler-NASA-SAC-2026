@@ -238,6 +238,122 @@ CONDITION_TESTS = {
     # no entry = no safe or objective test: clot, behavioral health
 }
 
+CARE = {
+    "Spaceflight Associated Neuro-ocular Syndrome (SANS)": {
+        "do": ["Tell your Crew Medical Officer about any change in vision, even a mild one.",
+               "Write down when it started and what changed (blur, distance, headache).",
+               "Repeat the near-vision and Amsler grid checks once a day and log the results.",
+               "Avoid long stretches of close-up screen work without breaks."],
+        "escalate": ["Sudden vision loss, or lines on the Amsler grid look distorted or missing.",
+                     "Vision keeps getting worse over several days."]},
+    "Sensorimotor / vestibular adaptation": {
+        "do": ["Move slowly and avoid sudden head movements.",
+               "Stay close to handholds and rest until the dizziness fades.",
+               "Hold off on demanding tasks (spacewalks, robotics) until you feel steady.",
+               "Drink fluids and log how you feel each day."],
+        "escalate": ["Vomiting that keeps you from holding down fluids.",
+                     "Symptoms last more than a day or two, or get worse."]},
+    "Immune change or infection (e.g. viral reactivation)": {
+        "do": ["Rest and drink fluids.",
+               "Take your temperature and log it twice a day.",
+               "Take a photo of any rash or sore each day to show how it changes.",
+               "Wash hands often and limit close contact."],
+        "escalate": ["Fever above your mission's threshold, or fever lasting more than 1–2 days.",
+                     "A rash that spreads quickly or you feel much worse."]},
+    "Decompression sickness": {
+        "do": ["Stop what you are doing and tell a crewmate and the ground team now.",
+               "Rest. Do not do another spacewalk or strenuous activity.",
+               "Follow your mission's decompression sickness procedure and the ground team's instructions.",
+               "Note when symptoms started relative to the spacewalk."],
+        "escalate": ["This is urgent. Do not wait for symptoms to settle on their own."]},
+    "Hypoxia or high CO2 exposure": {
+        "do": ["Check the cabin CO2 and oxygen readings and any active alarms.",
+               "Tell your crewmates and the ground team right away.",
+               "Follow your mission's procedure for cabin air problems, including moving to a well-ventilated area if directed.",
+               "Don't do demanding tasks while confused or breathless."],
+        "escalate": ["This is urgent. Confusion or breathlessness can get worse quickly."]},
+    "Cardiovascular adaptation": {
+        "do": ["Sit or lie down and rest.",
+               "When you stand up, do it slowly.",
+               "Drink fluids and follow your normal exercise plan unless told otherwise.",
+               "Count your pulse and log it with how you feel."],
+        "escalate": ["Chest pain or pressure, fainting, or breathlessness at rest.",
+                     "A racing or irregular heartbeat that doesn't settle."]},
+    "Possible blood clot (venous)": {
+        "do": ["Contact your Crew Medical Officer now.",
+               "Do not massage the swollen area and avoid strenuous exercise with that limb or neck.",
+               "Note which side is affected, when it began, and any redness or warmth."],
+        "escalate": ["This is urgent. Chest pain or sudden breathlessness makes it more so."]},
+    "Inadequate nutrition": {
+        "do": ["Log everything you eat and drink for the next few days.",
+               "Eat meals on schedule even if your appetite is low.",
+               "Tell the food or nutrition team about foods you can't face, so they can swap them.",
+               "Weigh yourself weekly and log it."],
+        "escalate": ["Weight keeps dropping, or you can't eat for several days."]},
+    "Bone or muscle loss / reduced fitness": {
+        "do": ["Complete your full exercise plan every day and log it.",
+               "Tell the Crew Medical Officer about back pain or weakness that is new.",
+               "Re-check grip strength and sit-to-stand once a week."],
+        "escalate": ["Sharp back pain, numbness, or weakness that appears suddenly."]},
+    "Acute radiation effects": {
+        "do": ["If a solar storm alert is active, move to the most shielded area as your mission procedure directs.",
+               "Tell the ground team and write down when each symptom started.",
+               "Record your dosimeter reading.",
+               "Rest and drink fluids."],
+        "escalate": ["This is urgent. Vomiting or fever after a known event should be reported straight away."]},
+    "Injury from launch/landing loads": {
+        "do": ["Limit movement of your neck and back until you've been checked.",
+               "Don't try to treat it yourself.",
+               "Tell the ground or recovery team about every pain, numbness or weakness."],
+        "escalate": ["This is urgent. Numbness, weakness or severe pain after launch or landing needs a medical check."]},
+    "Behavioral changes and psychiatric disorders": {
+        "do": ["Talk to someone you trust: a crewmate, family or friends on a call, or the behavioral health support team.",
+               "Ask for a private conversation with your Crew Medical Officer or psychologist.",
+               "Keep your routine: sleep, meals, exercise and some time to yourself.",
+               "Write down how your mood changes through the day."],
+        "escalate": ["You have thoughts of harming yourself or giving up. Contact your Crew Medical Officer or support protocol now.",
+                     "Low mood or anxiety lasts more than a couple of weeks, or stops you doing your job."]},
+    "Inadequate teamwork": {
+        "do": ["Take a break from the argument and come back to it when you are both calm.",
+               "Talk about specific tasks and needs, not about people.",
+               "Use your crew's agreed conflict process, or ask the ground team or psychologist to help mediate.",
+               "Keep sharing meals or downtime to rebuild trust."],
+        "escalate": ["Conflict is affecting safety-critical tasks or someone feels unsafe."]},
+    "Inadequate sleep and irregular schedules": {
+        "do": ["Keep a consistent bedtime and wake time.",
+               "Dim lights and cut screen time before sleep, and avoid caffeine late in your day.",
+               "Log your sleep hours and sleepiness each day.",
+               "Avoid safety-critical tasks when you are very drowsy."],
+        "escalate": ["You can't stay awake during tasks, or sleep problems last more than a week or two."]},
+    "Inadequate systems operations support": {
+        "do": ["Write down exactly which procedure, tool or equipment is causing trouble.",
+               "Report it to the ground team and ask for help prioritizing your workload.",
+               "Don't skip a safety step to save time. Ask for clarification instead."],
+        "escalate": ["The problem affects a safety-critical system or you can't get the support you need."]},
+}
+
+GENERIC_CARE = {
+    "do": ["Rest and drink fluids.", "Write down your symptoms and when they started.",
+           "Check again later today and tomorrow."],
+    "escalate": ["Symptoms get worse, or new ones appear."]}
+
+
+def show_care(r):
+    """Show instructions under a condition. r is one item from results/refined."""
+    care = CARE.get(r["name"], GENERIC_CARE)
+    with st.expander(f"What to do: {r['name']}"):
+        if r["level"] == "red":
+            st.error("Contact your Crew Medical Officer now.")
+        else:
+            st.info("Rest, re-check, and report if things don't improve.")
+        st.write("**What to do now**")
+        for line in care["do"]:
+            st.write(f"- {line}")
+        st.write("**Contact Ground Control if:**")
+        for line in care["escalate"]:
+            st.write(f"- {line}")
+        st.caption("General guidance only. Follow your mission procedures and the instructions of your Crew Medical Officer.")
+
 def tests_to_run(results):
     ids = []
     for r in results:
@@ -434,7 +550,7 @@ elif st.session_state.step == "results":
     for r in results:
         box = st.error if r["level"] == "red" else st.warning
         box(f"**{r['name']}**  Symptoms: {', '.join(r['matched'])}")
-        ids = tests_to_run(results)
+        show_care(r)
     ids = tests_to_run(results)
     if ids:
         st.button("Run tests to narrow this down", on_click=set_step, args=("tests",))
@@ -473,4 +589,5 @@ elif st.session_state.step == "refined":
             box = st.info
         extra = f"  \nUnusual tests: {', '.join(r['abnormal'])}" if r["abnormal"] else ""
         box(f"**{r['name']}** ({r['status']}){extra}")
+        show_care(r)
     st.button("Return to Home", on_click=set_step, args=("confirm_home",))
