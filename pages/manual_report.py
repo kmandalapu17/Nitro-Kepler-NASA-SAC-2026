@@ -265,8 +265,8 @@ def refine(results, test_results):
         else:
             status = "less likely"
         refined.append({**r, "status": status, "abnormal": abnormal})
-    order = {"supported": 0, "tests normal, still report": 1, "no test available": 2,
-             "not tested": 3, "less likely": 4}
+    order = {"supported": 0, "tests normal, still report": 2, "no test available": 3,
+             "not tested": 1, "less likely": 4}
     refined.sort(key=lambda r: (r["level"] != "red", order[r["status"]]))
     return refined
 
@@ -378,6 +378,7 @@ elif st.session_state.step == "fine":
     st.button("Return to Home", on_click=set_step, args=("confirm_home",))
 
 elif st.session_state.step == "confirm_home":
+    st.session_state.step = "start"
     st.switch_page("pages/homepage.py")
 
 elif st.session_state.step == "unwell":
@@ -425,7 +426,7 @@ elif st.session_state.step == "results":
     st.write("### Possible conditions")
 
     if not results:
-        st.write("Your symptoms don't match a known disease.")
+        st.write("Your symptoms don't match any known conditions.")
         st.write("Sending for Automatic Checks")
         if st.button("Perform Automatic Checks"):
             st.switch_page("pages/semi_automated_report.py")
@@ -456,6 +457,9 @@ elif st.session_state.step == "tests":
         if t == "Near Vision":
             with st.expander("Near Vision Card. Hold it at your usual reading distance."):
                 st.image("nearvisioncard.jpeg", caption="Can you read your usual smallest line?")
+        if t == "Balance":
+            with st.expander("Balance test instructions"):
+                st.image("tandemstance.jpeg", caption="Stand with one foot in front of the other, eyes closed. Time how long you can hold it.")
     st.button("See new results", on_click=submit_tests)
     st.button("Back", on_click=set_step, args=("results",))
 
