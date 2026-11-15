@@ -139,6 +139,8 @@ with lefts:
 with right:
     with st.container(horizontal_alignment="center"):
         auto = st.button("Click here for the semi-automated report.")
+with st.container(horizontal_alignment="center", vertical_alignment="center"):
+    st.image("New Piskel-1.png.png", caption="Your health is our priority.", width=400)
 
 _, mid, _ = st.columns([1, 2, 1])
 with mid:
