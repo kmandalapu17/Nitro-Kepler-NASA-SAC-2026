@@ -6,7 +6,7 @@ import streamlit as st
 st.markdown(
     """
     <style>
-    @import url('https://googleapis.com');
+    @import url('https://fonts.googleapis.com/css2?family=Rufina:wght@400;700&family=Playfair+Display:wght@400;700&family=Libre+Franklin:wght@400;700&display=swap');
 
     [data-testid="stMarkdownContainer"] h1 a, 
     [data-testid="stMarkdownContainer"] h2 a, 
@@ -15,18 +15,25 @@ st.markdown(
     }
 
     /* Base styles */
-    .stApp, p, [data-testid="stMarkdownContainer"] p {
-        font-family: 'Rufina', serif !important;
-        font-weight: 400;
+    .stApp, p, label, li, button, input, textarea,
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stCaptionContainer"],
+    [data-testid="stWidgetLabel"] p {
+        font-family: 'Playfair Display', serif !important;
     }
 
     .stButton > button {
-    border-width: 8px !important;  /* Change this value to adjust thickness */
+    border-width: 2px !important;  /* Change this value to adjust thickness */
     border-style: solid !important;
     border-color: #62A77A !important; /* Optional: Sets the color of the border */
     font-size: 18px !important;
     }
 
+    .stButton > button p {
+        font-family: 'Playfair Display', sans-serif !important;
+        font-weight: 700 !important;
+    }
+    
     /* Headings and Title container styling */
     [data-testid="stMarkdownContainer"] h1, 
     [data-testid="stMarkdownContainer"] h2, 
@@ -72,7 +79,7 @@ st.markdown(
         transform: translateX(-50%);
         opacity: 0;
         transition: opacity 0.2s;
-        font-family: 'Rufina', serif;
+        font-family: 'Playfair Display', serif;
         font-weight: 400;
         font-size: 16px;
         line-height: 1.4;
