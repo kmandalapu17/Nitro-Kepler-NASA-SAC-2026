@@ -88,58 +88,59 @@ BASELINES = {"balance": 20, "grip": 40, "pulse": 65, "weight": 75,
              "sit_stand": 15, "pvt": 300, "digits": 7}
 
 TESTS = {
-    "amsler":   {"label": "Amsler grid: do any lines look wavy, broken or missing?",
+    "Amsler Grid":   {"label": "Amsler grid: do any lines look wavy, broken or missing?", "help": "Amsler grid JPG.png",
                  "kind": "yesno", "abnormal": lambda v: v == "Yes"},
-    "near":     {"label": "Near-vision card: can you read your usual smallest line?",
+    "Near Vision":     {"label": "Near-vision card: can you read your usual smallest line?",
                  "kind": "yesno", "abnormal": lambda v: v == "No"},
-    "balance":  {"label": "Tandem stance, eyes closed: seconds held", "kind": "number",
+    "Balance":  {"label": "Tandem stance, eyes closed: seconds held", "kind": "number",
                  "abnormal": lambda v: v < 0.7 * BASELINES["balance"]},
-    "finger":   {"label": "Finger-to-nose, eyes closed: did you miss or shake?",
+    "Finger To Nose":   {"label": "Finger-to-nose, eyes closed: did you miss or shake?",
                  "kind": "yesno", "abnormal": lambda v: v == "Yes"},
-    "temp":     {"label": "Temperature (°C), if you have a thermometer", "kind": "number",
+    "Temperature":     {"label": "Temperature (°C), if you have a thermometer", "kind": "number",
                  "abnormal": lambda v: v >= 38.0},
-    "pulse":    {"label": "Pulse count: beats in 30 s × 2", "kind": "number",
+    "Pulse Count":    {"label": "Pulse count: beats in 30 s × 2", "kind": "number",
                  "abnormal": lambda v: abs(v - BASELINES["pulse"]) > 15},
-    "touch":    {"label": "Light touch on both sides (hands, feet): does one side feel numb or different?",
+    "Touch":    {"label": "Light touch on both sides (hands, feet): does one side feel numb or different?",
                  "kind": "yesno", "abnormal": lambda v: v == "Yes"},
-    "grip":     {"label": "Grip strength (kg), weaker side", "kind": "number",
+    "Grip Strength":     {"label": "Grip strength (kg), weaker side", "kind": "number",
                  "abnormal": lambda v: v < 0.85 * BASELINES["grip"]},
-    "resp":     {"label": "Breaths per minute, counted over 60 s", "kind": "number",
+    "Breaths Per Minute":     {"label": "Breaths per minute, counted over 60 s", "kind": "number",
                  "abnormal": lambda v: v > 20},
-    "pvt":      {"label": "Reaction-time test: median (ms)", "kind": "number",
+    "Reaction Time":      {"label": "Reaction-time test: median (ms)", "kind": "number",
                  "abnormal": lambda v: v > 1.2 * BASELINES["pvt"]},
-    "digits":   {"label": "Digit recall: longest list repeated back", "kind": "number",
+    "Digit Recall":   {"label": "Digit recall: longest list repeated back", "kind": "number",
                  "abnormal": lambda v: v < BASELINES["digits"] - 1},
-    "orthostat":{"label": "Stand up from lying down: did you feel lightheaded?",
+    "Lying to Standing":{"label": "Stand up from lying down: did you feel lightheaded?",
                  "kind": "yesno", "abnormal": lambda v: v == "Yes"},
-    "weight":   {"label": "Body weight (kg)", "kind": "number",
+    "Weight (Kg)":   {"label": "Body weight (kg)", "kind": "number",
                  "abnormal": lambda v: v < 0.97 * BASELINES["weight"]},
-    "sit_stand":{"label": "Sit-to-stand: reps in 30 s", "kind": "number",
+    "Sit to Stand": {"label": "Sit-to-stand: reps in 30 s", "kind": "number",
                  "abnormal": lambda v: v < 0.8 * BASELINES["sit_stand"]},
 }
 
 # keys must match the condition names in CONDITIONS exactly
 CONDITION_TESTS = {
-    "Spaceflight Associated Neuro-ocular Syndrome (SANS)": ["amsler", "near"],
-    "Sensorimotor / vestibular adaptation": ["balance", "finger"],
-    "Immune change or infection (e.g. viral reactivation)": ["temp", "pulse"],
-    "Decompression sickness": ["touch", "grip", "finger"],
-    "Hypoxia or high CO2 exposure": ["resp", "pulse", "pvt", "digits"],
-    "Cardiovascular adaptation": ["orthostat", "pulse"],
-    "Inadequate nutrition": ["weight", "grip"],
-    "Bone or muscle loss / reduced fitness": ["grip", "sit_stand"],
-    "Inadequate sleep and irregular schedules": ["pvt", "digits"],
-    "Acute radiation effects": ["temp"],
-    "Injury from launch/landing loads": ["touch", "grip", "finger"],
+    "Spaceflight Associated Neuro-ocular Syndrome (SANS)": ["Amsler Grid", "Near Vision"],
+    "Sensorimotor / vestibular adaptation": ["Balance", "Finger To Nose"],
+    "Immune change or infection (e.g. viral reactivation)": ["Temperature", "Pulse Count"],
+    "Decompression sickness": ["Touch", "Grip Strength", "Finger To Nose"],
+    "Hypoxia or high CO2 exposure": ["Breaths Per Minute", "Pulse Count", "Reaction Time", "Digit Recall"],
+    "Cardiovascular adaptation": ["Lying to Standing", "Pulse Count"],
+    "Inadequate nutrition": ["Weight (Kg)", "Grip Strength"],
+    "Bone or muscle loss / reduced fitness": ["Grip Strength", "Sit to Stand"],
+    "Inadequate sleep and irregular schedules": ["Reaction Time", "Digit Recall"],
+    "Acute radiation effects": ["Temperature"],
+    "Injury from launch/landing loads": ["Touch", "Grip Strength", "Finger To Nose"],
     # no entry = no safe or objective test: clot, behavioral health
 }
 
 def tests_to_run(results):
     ids = []
     for r in results:
-        for t in CONDITION_TESTS.get(r["name"], []):
-            if t not in ids:
-                ids.append(t)
+        if len(r["matched"]) >= r["min"] + 1:
+            for t in CONDITION_TESTS.get(r["name"], []):
+                if t not in ids:
+                    ids.append(t)
     return ids
 
 def refine(results, test_results):
@@ -173,7 +174,7 @@ def submit_tests():
     st.session_state.test_results = out
     st.session_state.step = "refined"
 
-def evaluate(selected, events):
+def evaluate(selected , events):
     results = []
     for c in CONDITIONS:
         if "context" in c and c["context"] not in events:
@@ -183,8 +184,9 @@ def evaluate(selected, events):
             continue
         if "requires" in c and not any(s in selected for s in c["requires"]):
             continue
-        results.append({"name": c["name"], "level": c["level"], "matched": matched})
-    # most matched symptoms first (ties keep the order of CONDITIONS)
+        # FIX: Add "min": c["min"] to the dictionary below
+        results.append({"name": c["name"], "level": c["level"], "matched": matched, "min": c["min"]})
+    
     results.sort(key=lambda r: -len(r["matched"]))
     return results
 
@@ -271,11 +273,7 @@ elif st.session_state.step == "fine":
     st.button("Return to Home", on_click=set_step, args=("confirm_home",))
 
 elif st.session_state.step == "confirm_home":
-    st.write("## Are you sure?")
-    if st.button("Yes"):
-        st.session_state.step = "start"
-        st.switch_page("pages/homepage.py")
-    st.button("No", on_click=set_step, args=("fine",))
+    st.switch_page("pages/homepage.py")
 
 elif st.session_state.step == "unwell":
     init_wizard()
@@ -347,6 +345,12 @@ elif st.session_state.step == "tests":
             st.radio(spec["label"], ["Yes", "No"], index=None, horizontal=True, key=f"test_{t}")
         else:
             st.number_input(spec["label"], value=None, key=f"test_{t}")
+        if t == "Amsler Grid":
+            with st.expander("Amsler Grid Diagram"):
+                st.image("Amsler grid JPG.png", caption="Look at the center dot. Check if lines look wavy or broken.")
+        if t == "Near Vision":
+            with st.expander("Near Vision Card. Hold it at your usual reading distance."):
+                st.image("nearvisioncard.jpeg", caption="Can you read your usual smallest line?")
     st.button("See new results", on_click=submit_tests)
     st.button("Back", on_click=set_step, args=("results",))
 
